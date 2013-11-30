@@ -208,6 +208,23 @@ key_released (GtkWidget    *widget,
     }
   else
     {
+      GtkTreeSelection *selection;
+      GtkTreeModel     *model;
+      GtkTreeIter       iter;
+
+      selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (private->results_list));
+      gtk_tree_selection_set_mode (selection, GTK_SELECTION_SINGLE);
+
+      if (gtk_tree_selection_get_selected (selection, &model, &iter))
+        {
+          GtkTreePath      *path;
+
+          path = gtk_tree_model_get_path (model, &iter);
+          gtk_tree_selection_unselect_path (selection, path);
+
+          gtk_tree_path_free (path);
+        }
+
       gtk_widget_hide (private->list_view);
       gtk_window_resize (GTK_WINDOW (private->dialog),
                          width, 1);
@@ -237,6 +254,7 @@ result_selected (GtkWidget    *widget,
             }
           case GDK_Up:
             {
+              gboolean          event_processed = FALSE;
               GtkTreeSelection *selection;
               GtkTreeModel     *model;
               GtkTreePath      *path;
@@ -258,9 +276,12 @@ result_selected (GtkWidget    *widget,
                       gtk_widget_grab_focus ((GTK_WIDGET (private->keyword_entry)));
                       gtk_editable_select_region (GTK_EDITABLE (private->keyword_entry), start_pos, end_pos);
 
-                      return TRUE;
+                      event_processed = TRUE;
                     }
+                  gtk_tree_path_free (path);
                 }
+
+              return event_processed;
             }
           case GDK_Down:
             {
