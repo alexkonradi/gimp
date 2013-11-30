@@ -170,7 +170,7 @@ key_released (GtkWidget    *widget,
   gint           width;
 
   gtk_window_get_size (GTK_WINDOW (private->dialog), &width, NULL);
-  entry_text = gtk_editable_get_chars (GTK_EDITABLE (widget), 0, -1);
+  entry_text = g_strstrip (gtk_editable_get_chars (GTK_EDITABLE (widget), 0, -1));
 
   switch (event->keyval)
     {
