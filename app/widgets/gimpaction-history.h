@@ -22,7 +22,8 @@
 
 typedef gboolean   (* GimpActionMatchFunc)       (GtkAction           *action,
                                                   const gchar         *keyword,
-                                                  gint                *section);
+                                                  gint                *section,
+                                                  gboolean             match_fuzzy);
 
 void       gimp_action_history_init              (GimpGuiConfig       *config);
 void       gimp_action_history_exit              (GimpGuiConfig       *config);

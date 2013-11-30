@@ -75,7 +75,8 @@ static gboolean     action_fuzzy_match                     (gchar             *s
                                                             gchar             *key);
 static gboolean     action_search_match_keyword            (GtkAction         *action,
                                                             const gchar*       keyword,
-                                                            gint              *section);
+                                                            gint              *section,
+                                                            gboolean           match_fuzzy);
 static void         action_search_update_position          (SearchDialog      *private);
 
 static void         action_search_finalizer                (SearchDialog      *private);
@@ -547,7 +548,7 @@ action_search_history_and_actions (const gchar  *keyword,
           if (! gtk_action_get_sensitive (action) && ! private->config->search_show_unavailable)
             continue;
 
-          if (action_search_match_keyword (action, keyword, &section))
+          if (action_search_match_keyword (action, keyword, &section, TRUE))
             {
               GList *list3;
 
@@ -596,7 +597,8 @@ action_fuzzy_match (gchar *string,
 static gboolean
 action_search_match_keyword (GtkAction   *action,
                              const gchar *keyword,
-                             gint        *section)
+                             gint        *section,
+                             gboolean     match_fuzzy)
 {
   gboolean  matched = FALSE;
   gchar    *key;
@@ -681,7 +683,7 @@ action_search_match_keyword (GtkAction   *action,
               g_free (tooltip);
             }
         }
-      if (! matched && action_fuzzy_match (label, key))
+      if (! matched && match_fuzzy && action_fuzzy_match (label, key))
         {
           matched = TRUE;
           if (section)
