@@ -537,10 +537,11 @@ action_search_history_and_actions (const gchar  *keyword,
 
           name = gtk_action_get_name (action);
 
-          if (g_str_has_suffix (name, "-menu")    ||
-              g_str_has_suffix (name, "-popup")   ||
-              g_str_has_prefix (name, "context-") ||
-              g_str_has_prefix (name, "plug-in-recent-"))
+          if (g_str_has_suffix (name, "-menu")           ||
+              g_str_has_suffix (name, "-popup")          ||
+              g_str_has_prefix (name, "context-")        ||
+              g_str_has_prefix (name, "plug-in-recent-") ||
+              g_strcmp0 (name, "dialogs-action-search") == 0)
             continue;
 
           if (! gtk_action_get_sensitive (action) && ! private->config->search_show_unavailable)

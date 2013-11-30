@@ -137,7 +137,8 @@ gimp_action_history_activate_callback (GtkAction *action,
       g_str_has_prefix (action_name, "context-")        ||
       g_str_has_prefix (action_name, "plug-in-recent-") ||
       g_strcmp0 (action_name, "plug-in-repeat") == 0    ||
-      g_strcmp0 (action_name, "plug-in-reshow") == 0)
+      g_strcmp0 (action_name, "plug-in-reshow") == 0    ||
+      g_strcmp0 (action_name, "dialogs-action-search") == 0)
     return;
 
   for (actions = history; actions; actions = g_list_next (actions))
