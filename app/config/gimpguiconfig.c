@@ -277,7 +277,7 @@ gimp_gui_config_class_init (GimpGuiConfigClass *klass)
                                     GIMP_PARAM_STATIC_STRINGS);
   GIMP_CONFIG_INSTALL_PROP_INT (object_class, PROP_ACTION_HISTORY_SIZE,
                                 "action-history-size", ACTION_HISTORY_SIZE_BLURB,
-                                0, 200, 20,
+                                0, 1000, 100,
                                 GIMP_PARAM_STATIC_STRINGS);
   GIMP_CONFIG_INSTALL_PROP_BOOLEAN (object_class, PROP_USER_MANUAL_ONLINE,
                                     "user-manual-online",
