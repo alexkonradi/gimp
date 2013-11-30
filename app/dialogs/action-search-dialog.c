@@ -51,28 +51,29 @@ typedef struct
   GtkWidget     *list_view;
 } SearchDialog;
 
-static void         key_released                           (GtkWidget          *widget,
-                                                            GdkEventKey        *event,
-                                                            SearchDialog       *private);
+static void         key_released                           (GtkWidget         *widget,
+                                                            GdkEventKey       *event,
+                                                            SearchDialog      *private);
 static gboolean     result_selected                        (GtkWidget         *widget,
                                                             GdkEventKey       *pKey,
                                                             SearchDialog      *private);
 static void         row_activated                          (GtkTreeView       *treeview,
-                                                            GtkTreePath        *path,
-                                                            GtkTreeViewColumn  *col,
-                                                            SearchDialog       *private);
-static gboolean     action_search_view_accel_find_func     (GtkAccelKey         *key,
-                                                            GClosure            *closure,
-                                                            gpointer            data);
-static gchar*       action_search_find_accel_label         (GtkAction          *action);
-static void         action_search_add_to_results_list      (GtkAction          *action,
-                                                            SearchDialog       *private,
-                                                            gint                section);
-static void         action_search_run_selected             (SearchDialog       *private);
+                                                            GtkTreePath       *path,
+                                                            GtkTreeViewColumn *col,
+                                                            SearchDialog      *private);
+static gboolean     action_search_view_accel_find_func     (GtkAccelKey       *key,
+                                                            GClosure          *closure,
+                                                            gpointer           data);
+static gchar*       action_search_find_accel_label         (GtkAction         *action);
+static void         action_search_add_to_results_list      (GtkAction         *action,
+                                                            SearchDialog      *private,
+                                                            gint               section);
+static void         action_search_run_selected             (SearchDialog      *private);
 static void         action_search_history_and_actions      (const gchar       *keyword,
                                                             SearchDialog      *private);
 static gboolean     action_fuzzy_match                     (gchar             *string,
                                                             gchar             *key);
+static gchar *      action_search_normalize_string         (const gchar       *str);
 static gboolean     action_search_match_keyword            (GtkAction         *action,
                                                             const gchar*       keyword,
                                                             gint              *section,
@@ -594,6 +595,30 @@ action_fuzzy_match (gchar *string,
     return FALSE;
 }
 
+/*
+ * Returns a newly allocated lowercased string, which replaced any
+ * spacing characters into a single space and stripped out any leading
+ * and trailing space. */
+static gchar *
+action_search_normalize_string (const gchar *str)
+{
+  GRegex *spaces_regex;
+  gchar  *normalized_str;
+  gint    i;
+
+  spaces_regex = g_regex_new ("[ \n\t\r]+", 0, 0, NULL);
+  normalized_str = g_regex_replace_literal (spaces_regex, str, -1, 0, " ", 0, NULL);
+
+  g_regex_unref (spaces_regex);
+
+  normalized_str = g_strstrip (normalized_str);
+
+  for (i = 0 ; i < strlen (normalized_str); i++)
+    normalized_str[i] = tolower (normalized_str[i]);
+
+  return normalized_str;
+}
+
 static gboolean
 action_search_match_keyword (GtkAction   *action,
                              const gchar *keyword,
@@ -603,7 +628,7 @@ action_search_match_keyword (GtkAction   *action,
   gboolean  matched = FALSE;
   gchar    *key;
   gchar    *label;
-  gint      i;
+  gchar    *tmp;
 
   if (keyword == NULL)
     {
@@ -616,13 +641,10 @@ action_search_match_keyword (GtkAction   *action,
       return TRUE;
     }
 
-  key   = g_strdup (keyword);
-  label = gimp_strip_uline (gtk_action_get_label (action));
-
-  for (i = 0 ; i < strlen (label); i++)
-    label[i] = tolower (label[i]);
-  for (i = 0; i < strlen (key); i++)
-    key[i] = tolower (key[i]);
+  key   = action_search_normalize_string (keyword);
+  tmp   = gimp_strip_uline (gtk_action_get_label (action));
+  label = action_search_normalize_string (tmp);
+  g_free (tmp);
 
   /* If keyword is two characters,
      then match them with first letters of first and second word in the labels.
@@ -664,12 +686,11 @@ action_search_match_keyword (GtkAction   *action,
         }
       else if (strlen (key) > 2)
         {
+          gchar *tooltip = NULL;
+
           if (gtk_action_get_tooltip (action)!= NULL)
             {
-              gchar *tooltip = g_strdup (gtk_action_get_tooltip (action));
-
-              for (i = 0; i < strlen (tooltip); i++)
-                tooltip[i] = tolower (tooltip[i]);
+              tooltip = action_search_normalize_string (gtk_action_get_tooltip (action));
 
               if (strstr (tooltip, key))
                 {
@@ -679,16 +700,41 @@ action_search_match_keyword (GtkAction   *action,
                       *section = 3;
                     }
                 }
-
-              g_free (tooltip);
             }
+
+          if (! matched && strchr (key, ' '))
+            {
+              gchar *key_copy  = g_strdup (key);
+              gchar *words = key_copy;
+              gchar *word;
+
+              matched = TRUE;
+              if (section)
+                {
+                  *section = 4;
+                }
+
+              while ((word = strsep (&words, " ")) != NULL)
+                {
+                  if (! strstr (label, word) && (! tooltip || ! strstr (tooltip, word)))
+                    {
+                      matched = FALSE;
+                      break;
+                    }
+                }
+
+              g_free (key_copy);
+            }
+
+          g_free (tooltip);
         }
+
       if (! matched && match_fuzzy && action_fuzzy_match (label, key))
         {
           matched = TRUE;
           if (section)
             {
-              *section = 4;
+              *section = 5;
             }
         }
     }
