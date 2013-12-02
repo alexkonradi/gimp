@@ -824,7 +824,8 @@ action_search_update_position (SearchDialog *private)
 void
 action_search_finalizer (SearchDialog *private)
 {
-  gtk_widget_destroy (private->dialog);
+  if (GTK_IS_WIDGET (private->dialog))
+    gtk_widget_destroy (private->dialog);
 }
 
 static gboolean
