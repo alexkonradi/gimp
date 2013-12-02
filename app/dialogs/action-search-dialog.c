@@ -18,9 +18,6 @@
 #include "config.h"
 
 #include <ctype.h>
-#include <stdlib.h>
-
-#include <glib/gstdio.h>
 
 #include <gegl.h>
 #include <gtk/gtk.h>
@@ -32,13 +29,14 @@
 
 #include "dialogs-types.h"
 
-#include "widgets/gimpuimanager.h"
+#include "config/gimpguiconfig.h"
+
+#include "core/gimp.h"
+
 #include "widgets/gimpaction.h"
 #include "widgets/gimpaction-history.h"
 #include "widgets/gimpspinscale.h"
-
-#include "config/gimpguiconfig.h"
-#include "core/gimp.h"
+#include "widgets/gimpuimanager.h"
 
 #include "action-search-dialog.h"
 
